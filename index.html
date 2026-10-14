@@ -576,15 +576,15 @@
                 const buahPhotos = await uploadFilesToDrive('buahFoto', 'Buah', tgl);
 
                 const reportData = {
-                    tanggal: tgl,
-                    uploader: currentUser.name,
-                    username: currentUser.username,
-                    karbo: { kg: document.getElementById('karboKg').value, ket: document.getElementById('karboKet').value, fotos: karboPhotos },
-                    protein: { kg: document.getElementById('proteinKg').value, ket: document.getElementById('proteinKet').value, fotos: proteinPhotos },
-                    sayur: { kg: document.getElementById('sayurKg').value, ket: document.getElementById('sayurKet').value, fotos: sayurPhotos },
-                    buah: { kg: document.getElementById('buahKg').value, ket: document.getElementById('buahKet').value, fotos: buahPhotos },
-                    totalKg: document.getElementById('totalKg').value,
-                    createdAt: new Date().toISOString()
+                    tanggal : tgl,
+                    Koordinator : currentUser.name,
+                    username : currentUser.username,
+                    karbo : { kg: document.getElementById('karboKg').value, ket: document.getElementById('karboKet').value, fotos: karboPhotos },
+                    protein : { kg: document.getElementById('proteinKg').value, ket: document.getElementById('proteinKet').value, fotos: proteinPhotos },
+                    sayur : { kg: document.getElementById('sayurKg').value, ket: document.getElementById('sayurKet').value, fotos: sayurPhotos },
+                    buah : { kg: document.getElementById('buahKg').value, ket: document.getElementById('buahKet').value, fotos: buahPhotos },
+                    totalKg : document.getElementById('totalKg').value,
+                    createdAt : new Date().toISOString()
                 };
 
                 await addDoc(collection(db, "sisa_makanan"), reportData);
