@@ -483,6 +483,12 @@
 
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('inputTanggal').value = todayStr;
+            
+            const filterStart = document.getElementById('filterStart');
+            const filterEnd = document.getElementById('filterEnd');
+            if (filterStart) filterStart.value = todayStr;
+            if (filterEnd) filterEnd.value = todayStr;
+
             loadArchives();
         }
 
@@ -530,13 +536,11 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // Ekspor hasil kompresi ke format base64 (JPEG) dengan kualitas dioptimalkan
                         const dataUrl = canvas.toDataURL('image/jpeg', quality);
                         const base64Data = dataUrl.split(',')[1];
                         resolve(base64Data);
                     };
                     img.onerror = function() {
-                        // Fallback jika gambar gagal dimuat canvas
                         resolve(event.target.result.split(',')[1]);
                     };
                 };
@@ -552,7 +556,6 @@
             const folderDateName = getIndonesianDateName(dateStr);
 
             for (let file of files) {
-                // Kompres gambar terlebih dahulu agar ringan dan tidak bikin crash HP lama
                 const compressedBase64 = await compressImage(file, 1000, 1000, 0.7);
                 if (!compressedBase64) continue;
 
@@ -587,7 +590,6 @@
         window.submitReport = async function(e) {
             e.preventDefault();
 
-            // Validasi: Jika kategori diisi berat/keterangan, wajib unggah foto
             const categories = [
                 { kgId: 'karboKg', ketId: 'karboKet', fotoId: 'karboFoto', name: 'Karbohidrat' },
                 { kgId: 'proteinKg', ketId: 'proteinKet', fotoId: 'proteinFoto', name: 'Protein' },
@@ -668,12 +670,18 @@
 
                 rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+                const todayStr = new Date().toISOString().split('T')[0];
+
                 if (currentUser.role === 'admin') {
                     const start = document.getElementById('filterStart').value;
                     const end = document.getElementById('filterEnd').value;
-                    if (start && end) rows = rows.filter(r => r.tanggal >= start && r.tanggal <= end);
+                    if (start && end) {
+                        rows = rows.filter(r => r.tanggal >= start && r.tanggal <= end);
+                    } else {
+                        rows = rows.filter(r => r.tanggal === todayStr);
+                    }
                 } else {
-                    rows = rows.filter(r => r.username === currentUser.username);
+                    rows = rows.filter(r => r.username === currentUser.username && r.tanggal === todayStr);
                 }
 
                 archiveRowsData = rows;
@@ -722,12 +730,10 @@
             let photoHtml = '';
             if (currentUser.role === 'admin') {
                 let photos = catData.fotos || [];
+                // Tanda unduh di tabel dihilangkan, hanya menampilkan thumbnail gambar yang dapat diklik untuk melihat foto besar
                 photoHtml = photos.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">` + photos.map(p => `
                     <div class="inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200">
-                        <img src="${p.data || p.fileUrl}" onclick="openPhotoModal('${p.data || p.fileUrl}')" class="w-7 h-7 object-cover rounded cursor-pointer hover:opacity-80 transition" title="Klik memperbesar">
-                        <a href="${p.data || p.fileUrl}" download="${catLabel}_foto.jpg" class="bg-biruAsinDark text-white p-1 rounded text-[10px] hover:bg-biruAsinHover transition" title="Unduh">
-                            <i class="fa-solid fa-download"></i>
-                        </a>
+                        <img src="${p.data || p.fileUrl}" onclick="openPhotoModal('${p.data || p.fileUrl}')" class="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition" title="Klik untuk lihat foto">
                     </div>
                 `).join('') + `</div>` : '';
             } else {
@@ -844,20 +850,74 @@
         }
 
         window.exportToPNG = function() {
-            const element = document.getElementById('archiveContainer');
-            const actionCols = element.querySelectorAll('.action-col');
+            if (!archiveRowsData || archiveRowsData.length === 0) {
+                showModalAlert('Informasi', 'Tidak ada data arsip untuk diekspor.', 'info');
+                return;
+            }
 
-            actionCols.forEach(col => col.style.display = 'none');
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = '1100px';
+            container.style.padding = '30px';
+            container.style.backgroundColor = '#ffffff';
+            container.style.fontFamily = 'ui-sans-serif, system-ui, sans-serif';
 
-            html2canvas(element, { scale: 2 }).then(canvas => {
+            let rowsHtml = '';
+            archiveRowsData.forEach((r, idx) => {
+                const karboStr = `${r.karbo?.kg ? r.karbo.kg + ' Kg' : ''} ${r.karbo?.ket ? '(' + r.karbo.ket + ')' : ''}`.trim() || "-";
+                const proteinStr = `${r.protein?.kg ? r.protein.kg + ' Kg' : ''} ${r.protein?.ket ? '(' + r.protein.ket + ')' : ''}`.trim() || "-";
+                const sayurStr = `${r.sayur?.kg ? r.sayur.kg + ' Kg' : ''} ${r.sayur?.ket ? '(' + r.sayur.ket + ')' : ''}`.trim() || "-";
+                const buahStr = `${r.buah?.kg ? r.buah.kg + ' Kg' : ''} ${r.buah?.ket ? '(' + r.buah.ket + ')' : ''}`.trim() || "-";
+                
+                rowsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 10px; text-align: center; color: #475569;">${idx + 1}</td>
+                        <td style="padding: 10px; font-weight: 500; color: #0f172a; white-space: nowrap;">${r.tanggal}</td>
+                        <td style="padding: 10px; color: #334155;">${karboStr}</td>
+                        <td style="padding: 10px; color: #334155;">${proteinStr}</td>
+                        <td style="padding: 10px; color: #334155;">${sayurStr}</td>
+                        <td style="padding: 10px; color: #334155;">${buahStr}</td>
+                        <td style="padding: 10px; font-weight: 700; color: #0f172a; white-space: nowrap;">${r.totalKg || '0 Kg'}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: bold; color: #0f172a; margin: 0 0 5px 0;">LAPORAN PENDATAAN SISA MAKANAN DARI PEMORSIAN</h2>
+                    <p style="font-size: 12px; color: #64748b; margin: 0;">SPPG KOTA SERANG SERANG SERANG 2</p>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
+                    <thead>
+                        <tr style="background-color: #0284c7; color: #ffffff; text-transform: uppercase; font-size: 11px;">
+                            <th style="padding: 10px; text-align: center; border: 1px solid #cbd5e1;">No</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Tanggal</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Karbohidrat</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Protein</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Sayur</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Buah</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #cbd5e1;">Total (Kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+
+            document.body.appendChild(container);
+
+            html2canvas(container, { scale: 2 }).then(canvas => {
+                document.body.removeChild(container);
                 const link = document.createElement('a');
-                link.download = `Arsip_Sisa_Makanan_SPPG_${new Date().toISOString().split('T')[0]}.png`;
+                link.download = `Laporan_Sisa_Makanan_SPPG_${new Date().toISOString().split('T')[0]}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                actionCols.forEach(col => col.style.display = '');
             }).catch(err => {
-                console.error("Gagal ekspor gambar:", err);
-                actionCols.forEach(col => col.style.display = '');
+                console.error("Gagal ekspor gambar PNG:", err);
+                if (document.body.contains(container)) document.body.removeChild(container);
             });
         }
 
