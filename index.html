@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendataan Sisa Makanan - Pemorsian</title>
+    <title>Pendataan Sisa Makanan Dari Pemorsian</title>
     <!-- Tailwind CSS untuk Desain Responsif & Modern -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -48,7 +48,7 @@
                 </div>
                 <div>
                     <h1 id="welcomeText" class="font-bold text-lg sm:text-xl leading-tight"></h1>
-                    <p class="text-xs text-sky-100"><i class="fa-solid fa-building"></i> SPPG KOTA SERANG SERANG SERANG 2</p>
+                    <p class="text-xs text-sky-100"><i class="fa-solid fa-building"></i> SPPG KOTA SERANG 2</p>
                 </div>
             </div>
             
@@ -78,8 +78,8 @@
                         <img src="logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-bowl-food text-3xl text-biruAsinDark\'></i>';">
                     </div>
                     <h2 class="text-2xl font-bold text-slate-900">Pendataan Sisa Makanan</h2>
-                    <h2 class="text-2xl font-bold text-slate-900">Pemorsian</h2>
-                    <p class="text-xs text-slate-500 mt-1">SISTEM SPPG KOTA SERANG SERANG SERANG 2</p>
+                    <h2 class="text-2xl font-bold text-slate-900">Pemorsian & Packing</h2>
+                    <p class="text-xs text-slate-500 mt-1">SISTEM SPPG KOTA SERANG 2</p>
                 </div>
 
                 <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
@@ -131,7 +131,7 @@
             <div id="inputCardWrapper" class="bg-white p-5 sm:p-8 rounded-2xl card-glow border border-sky-100">
                 <div class="border-b border-slate-100 pb-4 mb-5 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900">Form Pendataan Sisa Makanan Dari Pemorsian</h3>
+                        <h3 class="text-lg font-bold text-slate-900">Form Pendataan Sisa Makanan Pemorsian</h3>
                         <p class="text-xs text-slate-500">Masukkan berat dan unggah foto bukti</p>
                     </div>
                     <span id="uploaderBadge" class="bg-sky-100 text-biruAsinDark text-xs px-2.5 py-1 rounded-full font-semibold"></span>
@@ -239,7 +239,7 @@
                 </form>
             </div>
 
-            <!-- BAGIAN ARSIP (1 TABEL UTUH GABUNGAN) -->
+            <!-- BAGIAN ARSIP -->
             <div id="archiveContainer" class="bg-white p-5 sm:p-8 rounded-2xl card-glow border border-sky-100 space-y-6">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-100 pb-4">
                     <div>
@@ -248,7 +248,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-                        <!-- PANEL TOMBOL EKSPOR (EXCEL, PDF, PNG) -->
+                        <!-- PANEL TOMBOL EKSPOR -->
                         <div class="flex items-center space-x-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
                             <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition flex items-center space-x-1" title="Ekspor ke Excel">
                                 <i class="fa-solid fa-file-excel"></i>
@@ -304,7 +304,7 @@
     </main>
 
     <footer class="text-center py-4 text-xs text-slate-400 mt-auto">
-        &copy; 2026 SPPG KOTA SERANG SERANG SERANG 2. All Rights Reserved.
+        &copy; 2026 SPPG KOTA SERANG 2. All Rights Reserved.
     </footer>
 
     <!-- MODAL PREVIEW FOTO JELAS -->
@@ -339,7 +339,7 @@
     <!-- SCRIPT APLIKASI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDtCpHspHOwaMeXrf_aGrSYooh4tJ-EbNI",
@@ -366,7 +366,6 @@
         let currentUser = null;
         let archiveRowsData = [];
 
-        /* FUNGSI NOTIFIKASI PROFESIONAL */
         window.showModalAlert = function(title, message, type = 'success', onConfirm = null) {
             const modal = document.getElementById('profModal');
             const iconWrapper = document.getElementById('profModalIconWrapper');
@@ -506,8 +505,8 @@
             return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         }
 
-        /* FUNGSI KOMPRESI GAMBAR AMAN UNTUK SEMUA PERANGKAT (ANDROID LAMA/BARU) */
-        function compressImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) {
+        /* KOMPRESI RINGAN & AMAN UNTUK SEMUA PERANGKAT */
+        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.6) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -537,54 +536,72 @@
                         ctx.drawImage(img, 0, 0, width, height);
 
                         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        const base64Data = dataUrl.split(',')[1];
-                        resolve(base64Data);
+                        resolve({
+                            base64: dataUrl.split(',')[1],
+                            dataUrl: dataUrl,
+                            name: file.name
+                        });
                     };
-                    img.onerror = function() {
-                        resolve(event.target.result.split(',')[1]);
-                    };
+                    img.onerror = () => resolve({ base64: null, dataUrl: event.target.result, name: file.name });
                 };
-                reader.onerror = function() {
-                    resolve(null);
-                };
+                reader.onerror = () => resolve(null);
             });
         }
 
-        async function uploadFilesToDrive(fileInputId, categoryName, dateStr) {
-            const files = document.getElementById(fileInputId).files;
-            let uploadedPhotos = [];
+        /* FUNGSI BACKGROUND SYNC KE DRIVE & UPDATE FILE ID */
+        async function syncPhotoToDrive(docId, categoryKey, photoIndex, compressedBase64, fileName, dateStr) {
             const folderDateName = getIndonesianDateName(dateStr);
-
-            for (let file of files) {
-                const compressedBase64 = await compressImage(file, 1000, 1000, 0.7);
-                if (!compressedBase64) continue;
-
-                try {
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: "upload",
-                            category: categoryName,
-                            date: folderDateName,
-                            base64: compressedBase64,
-                            mimeType: "image/jpeg",
-                            fileName: file.name
-                        })
-                    });
-                    const resJson = await response.json();
-                    if (resJson.status === "success") {
-                        uploadedPhotos.push({
-                            fileId: resJson.fileId,
-                            fileUrl: resJson.fileUrl,
-                            name: file.name,
-                            data: `data:image/jpeg;base64,${compressedBase64}`
-                        });
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "upload",
+                        category: categoryKey,
+                        date: folderDateName,
+                        base64: compressedBase64,
+                        mimeType: "image/jpeg",
+                        fileName: fileName
+                    })
+                });
+                const resJson = await response.json();
+                if (resJson.status === "success") {
+                    // Ambil dokumen terbaru dari Firebase, lalu update fileId dan fileUrl dari Google Drive
+                    const docRef = doc(db, "sisa_makanan", docId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        let data = docSnap.data();
+                        if (data[categoryKey] && data[categoryKey].fotos && data[categoryKey].fotos[photoIndex]) {
+                            data[categoryKey].fotos[photoIndex].fileId = resJson.fileId;
+                            data[categoryKey].fotos[photoIndex].fileUrl = resJson.fileUrl;
+                            await updateDoc(docRef, { [categoryKey]: data[categoryKey] });
+                        }
                     }
-                } catch (err) {
-                    console.error("Gagal upload ke Sistem:", err);
                 }
+            } catch (err) {
+                console.error("Sinkronisasi latar belakang tertunda:", err);
             }
-            return uploadedPhotos;
+        }
+
+        async function processCategoryFiles(fileInputId, categoryName, dateStr, docId) {
+            const files = document.getElementById(fileInputId).files;
+            let photosArray = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const compressed = await compressImage(files[i], 800, 800, 0.6);
+                if (!compressed) continue;
+
+                // Struktur objek foto dengan menyertakan slot fileId kosong untuk diisi setelah sync Drive selesai
+                photosArray.push({
+                    fileId: "",
+                    fileUrl: "",
+                    name: compressed.name,
+                    data: compressed.dataUrl
+                });
+
+                // Jalankan sinkronisasi upload ke Google Drive di latar belakang (background)
+                syncPhotoToDrive(docId, categoryName, i, compressed.base64, compressed.name, dateStr);
+            }
+            return photosArray;
         }
 
         window.submitReport = async function(e) {
@@ -616,33 +633,48 @@
             try {
                 const tgl = document.getElementById('inputTanggal').value;
                 
-                const karboPhotos = await uploadFilesToDrive('karboFoto', 'Karbohidrat', tgl);
-                const proteinPhotos = await uploadFilesToDrive('proteinFoto', 'Protein', tgl);
-                const sayurPhotos = await uploadFilesToDrive('sayurFoto', 'Sayur', tgl);
-                const buahPhotos = await uploadFilesToDrive('buahFoto', 'Buah', tgl);
-
+                // Buat kerangka data awal dengan gambar lokal (supaya instan masuk arsip)
                 const reportData = {
                     tanggal: tgl,
                     uploader: currentUser.name,
                     username: currentUser.username,
-                    karbo: { kg: document.getElementById('karboKg').value, ket: document.getElementById('karboKet').value, fotos: karboPhotos },
-                    protein: { kg: document.getElementById('proteinKg').value, ket: document.getElementById('proteinKet').value, fotos: proteinPhotos },
-                    sayur: { kg: document.getElementById('sayurKg').value, ket: document.getElementById('sayurKet').value, fotos: sayurPhotos },
-                    buah: { kg: document.getElementById('buahKg').value, ket: document.getElementById('buahKet').value, fotos: buahPhotos },
+                    karbo: { kg: document.getElementById('karboKg').value, ket: document.getElementById('karboKet').value, fotos: [] },
+                    protein: { kg: document.getElementById('proteinKg').value, ket: document.getElementById('proteinKet').value, fotos: [] },
+                    sayur: { kg: document.getElementById('sayurKg').value, ket: document.getElementById('sayurKet').value, fotos: [] },
+                    buah: { kg: document.getElementById('buahKg').value, ket: document.getElementById('buahKet').value, fotos: [] },
                     totalKg: document.getElementById('totalKg').value,
                     createdAt: new Date().toISOString()
                 };
 
-                await addDoc(collection(db, "sisa_makanan"), reportData);
+                // Simpan instan ke Firebase Firestore
+                const docRef = await addDoc(collection(db, "sisa_makanan"), reportData);
+                const newDocId = docRef.id;
 
-                const waMessage = `*LAPORAN PENDATAAN SISA MAKANAN DARI PEMORSIAN*\n\nTanggal: ${reportData.tanggal}\nTotal: ${reportData.totalKg}\n\nData berhasil disimpan.`;
+                // Proses kompresi ringan dan jalankan background sync untuk foto
+                const karboPhotos = await processCategoryFiles('karboFoto', 'karbo', tgl, newDocId);
+                const proteinPhotos = await processCategoryFiles('proteinFoto', 'protein', tgl, newDocId);
+                const sayurPhotos = await processCategoryFiles('sayurFoto', 'sayur', tgl, newDocId);
+                const buahPhotos = await processCategoryFiles('buahFoto', 'buah', tgl, newDocId);
+
+                // Update dokumen dengan array foto lokal agar langsung tampil
+                if (karboPhotos.length || proteinPhotos.length || sayurPhotos.length || buahPhotos.length) {
+                    await updateDoc(doc(db, "sisa_makanan", newDocId), {
+                        "karbo.fotos": karboPhotos,
+                        "protein.fotos": proteinPhotos,
+                        "sayur.fotos": sayurPhotos,
+                        "buah.fotos": buahPhotos
+                    });
+                }
+
+                // Kirim notifikasi WhatsApp via Fonnte di latar belakang
+                const waMessage = `*LAPORAN PENDATAAN SISA MAKANAN DARI PEMORSIAN*\n\nTanggal: ${reportData.tanggal}\nOleh: ${currentUser.name}\nTotal: ${reportData.totalKg}\n\nData berhasil disimpan.`;
                 fetch('https://api.fonnte.com/send', {
                     method: 'POST',
                     headers: { 'Authorization': FONNTE_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ target: FONNTE_TARGET, message: waMessage })
                 }).catch(err => console.log('WA Error:', err));
 
-                showModalAlert('Berhasil', 'Laporan berhasil disimpan!', 'success');
+                showModalAlert('Berhasil', 'Laporan berhasil dikirim!', 'success');
                 document.getElementById('pemorsianForm').reset();
                 document.getElementById('inputTanggal').value = new Date().toISOString().split('T')[0];
                 calculateTotal();
@@ -660,8 +692,7 @@
             const tableArsipGabungan = document.getElementById('tableArsipGabungan');
             const emptyDiv = document.getElementById('emptyArchive');
 
-            const loadingHtml = `<tr><td colspan="8" class="text-center py-4 text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat...</td></tr>`;
-            tableArsipGabungan.innerHTML = loadingHtml;
+            tableArsipGabungan.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> Memuat...</td></tr>`;
 
             try {
                 const querySnapshot = await getDocs(collection(db, "sisa_makanan"));
@@ -708,7 +739,7 @@
             }
         }
 
-        function formatCategoryCell(catData, catLabel) {
+        function formatCategoryCell(catData) {
             if (!catData || (!catData.kg && !catData.ket && (!catData.fotos || catData.fotos.length === 0))) {
                 return '<span class="text-slate-400">-</span>';
             }
@@ -730,14 +761,11 @@
             let photoHtml = '';
             if (currentUser.role === 'admin') {
                 let photos = catData.fotos || [];
-                // Tanda unduh di tabel dihilangkan, hanya menampilkan thumbnail gambar yang dapat diklik untuk melihat foto besar
                 photoHtml = photos.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">` + photos.map(p => `
                     <div class="inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200">
                         <img src="${p.data || p.fileUrl}" onclick="openPhotoModal('${p.data || p.fileUrl}')" class="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition" title="Klik untuk lihat foto">
                     </div>
                 `).join('') + `</div>` : '';
-            } else {
-                photoHtml = '<span class="text-slate-400 italic text-[11px] block"></span>';
             }
 
             return `
@@ -761,10 +789,10 @@
             tr.innerHTML = `
                 <td class="p-3 text-center font-medium text-slate-500">${no}</td>
                 <td class="p-3 font-medium text-slate-900 whitespace-nowrap">${record.tanggal}</td>
-                <td class="p-3">${formatCategoryCell(record.karbo, 'Karbohidrat')}</td>
-                <td class="p-3">${formatCategoryCell(record.protein, 'Protein')}</td>
-                <td class="p-3">${formatCategoryCell(record.sayur, 'Sayur')}</td>
-                <td class="p-3">${formatCategoryCell(record.buah, 'Buah')}</td>
+                <td class="p-3">${formatCategoryCell(record.karbo)}</td>
+                <td class="p-3">${formatCategoryCell(record.protein)}</td>
+                <td class="p-3">${formatCategoryCell(record.sayur)}</td>
+                <td class="p-3">${formatCategoryCell(record.buah)}</td>
                 <td class="p-3 font-bold text-slate-800 whitespace-nowrap">${record.totalKg || '0 Kg'}</td>
                 ${actionTd}
             `;
@@ -783,7 +811,6 @@
 
         window.applyFilter = function() { loadArchives(); }
 
-        /* FUNGSI EKSPOR EXCEL, PDF, DAN PNG */
         window.exportToExcel = function() {
             if (!archiveRowsData || archiveRowsData.length === 0) {
                 showModalAlert('Informasi', 'Tidak ada data arsip untuk diekspor.', 'info');
@@ -822,7 +849,7 @@
             doc.setFontSize(14);
             doc.text("LAPORAN PENDATAAN SISA MAKANAN DARI PEMORSIAN", 14, 15);
             doc.setFontSize(10);
-            doc.text("SPPG KOTA SERANG SERANG SERANG 2", 14, 21);
+            doc.text("SPPG KOTA SERANG 2", 14, 21);
 
             let bodyData = [];
             archiveRowsData.forEach((r, idx) => {
@@ -887,7 +914,7 @@
             container.innerHTML = `
                 <div style="margin-bottom: 20px;">
                     <h2 style="font-size: 18px; font-weight: bold; color: #0f172a; margin: 0 0 5px 0;">LAPORAN PENDATAAN SISA MAKANAN DARI PEMORSIAN</h2>
-                    <p style="font-size: 12px; color: #64748b; margin: 0;">SPPG KOTA SERANG SERANG SERANG 2</p>
+                    <p style="font-size: 12px; color: #64748b; margin: 0;">SPPG KOTA SERANG 2</p>
                 </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1px solid #cbd5e1;">
                     <thead>
@@ -921,19 +948,16 @@
             });
         }
 
+        /* FUNGSI HAPUS LAPORAN DAN FILE FOTO DI GOOGLE DRIVE */
         window.deleteRecord = async function(id) {
             showModalAlert('Konfirmasi Hapus', 'Hapus laporan ini secara permanen?', 'error', async () => {
                 try {
-                    const querySnapshot = await getDocs(collection(db, "sisa_makanan"));
-                    let targetDoc = null;
-                    querySnapshot.forEach(docSnap => {
-                        if (docSnap.id === id) {
-                            targetDoc = docSnap.data();
-                        }
-                    });
-
+                    const docRef = doc(db, "sisa_makanan", id);
+                    const docSnap = await getDoc(docRef);
                     let fileIdsToDelete = [];
-                    if (targetDoc) {
+
+                    if (docSnap.exists()) {
+                        const targetDoc = docSnap.data();
                         ['karbo', 'protein', 'sayur', 'buah'].forEach(cat => {
                             if (targetDoc[cat] && targetDoc[cat].fotos) {
                                 targetDoc[cat].fotos.forEach(f => {
@@ -943,6 +967,7 @@
                         });
                     }
 
+                    // Kirim perintah hapus ke Google Apps Script agar file di Google Drive terhapus
                     if (fileIdsToDelete.length > 0) {
                         await fetch(APPS_SCRIPT_URL, {
                             method: 'POST',
@@ -953,8 +978,9 @@
                         }).catch(err => console.log('Drive delete warning:', err));
                     }
 
-                    await deleteDoc(doc(db, "sisa_makanan", id));
-                    showModalAlert('Berhasil', 'Data laporan dan file foto berhasil dihapus.', 'success');
+                    // Hapus dokumen dari Firebase
+                    await deleteDoc(docRef);
+                    showModalAlert('Berhasil', 'Data laporan dan file berhasil dihapus.', 'success');
                     loadArchives();
                 } catch (err) {
                     console.error(err);
