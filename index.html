@@ -859,14 +859,12 @@
             }
 
             let photoHtml = '';
-            if (currentUser.role === 'admin') {
-                let photos = catData.fotos || [];
-                photoHtml = photos.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">` + photos.map(p => `
-                    <div class="inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200">
-                        <img src="${p.data || p.fileUrl}" onclick="openPhotoModal('${p.data || p.fileUrl}')" class="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition" title="Klik untuk lihat foto">
-                    </div>
-                `).join('') + `</div>` : '';
-            }
+            let photos = catData.fotos || [];
+            photoHtml = photos.length > 0 ? `<div class="flex flex-wrap gap-1 mt-1">` + photos.map(p => `
+                <div class="inline-flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200">
+                    <img src="${p.data || p.fileUrl}" onclick="openPhotoModal('${p.data || p.fileUrl}')" class="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition" title="Klik untuk lihat foto">
+                </div>
+            `).join('') + `</div>` : '';
 
             return `
                 <div class="space-y-0.5">
